@@ -67,6 +67,6 @@ jobs:
 
       - name: Probar compilación del Monolito y Microservicio
         run: |
-          docker-compose build
+          docker compose build
           # Aquí en el futuro puedes agregar comandos para subir la imagen a DockerHub 
           # o desplegarla ('up -d') mediante SSH en la universidad.
