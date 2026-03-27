@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 1. Monolito Administrativo (Core)
+  api-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iudigital_api_core
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MONGODB_URI=${MONGODB_URI}
+    restart: always
+    networks:
+      - iudigital_net
+
+  # 2. Microservicio de Proyectos (Desacoplado y Escalable)
+  api-proyectos:
+    build:
+      context: ./microservicio-proyectos
+      dockerfile: Dockerfile
+    # Eliminamos container_name y ports para permitir escalar MÚLTIPLES réplicas sin conflicto de puertos
+    environment:
+      - PORT=4001
+      - MONGODB_URI=${MONGODB_URI}
+    restart: always
+    networks:
+      - iudigital_net
+
+  # 3. Load Balancer (Nginx) para distribuir el tráfico hacia api-proyectos
+  load-balancer:
+    image: nginx:alpine
+    ports:
+      - "4001:80" # Todo el tráfico público entra de nuevo por el puerto 4001, pero llega a Nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-proyectos
+    networks:
+      - iudigital_net
+
+# Definición de la red interna de contenedores
+networks:
+  iudigital_net:
+    driver: bridge

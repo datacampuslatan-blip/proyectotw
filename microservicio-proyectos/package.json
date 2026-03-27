@@ -1,0 +1,16 @@
+{
+    "name": "microservicio-proyectos",
+    "version": "1.0.0",
+    "description": "Microservicio desacoplado para Gestion de Proyectos",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "node src/index.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "mongoose": "^8.3.4"
+    }
+}

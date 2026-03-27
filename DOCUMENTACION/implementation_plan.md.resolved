@@ -1,0 +1,78 @@
+# Plan de Implementación: Arquitectura de Microservicios y Contenedorización (Docker)
+
+La aplicación actúal es un Monolito que centraliza los endpoints de [Clientes](file:///c:/Users/Lenovo/Desktop/PROYECTO%20TW/frontend/index.html#342-383), `Universidades`, `Etapas`, `Tipos de Proyecto` y [Proyectos](file:///c:/Users/Lenovo/Desktop/PROYECTO%20TW/src/controllers/proyectoController.js#15-29). El objetivo principal de este paso es extraer el módulo con mayor demanda concurrente ([Proyectos](file:///c:/Users/Lenovo/Desktop/PROYECTO%20TW/src/controllers/proyectoController.js#15-29)) hacia un entorno de ejecución separado (Microservicio) y orquestar ambos sistemas simultáneamente usando **Docker Compose**.
+
+## User Review Required
+
+> [!CAUTION]
+> Para la fase de pruebas locales, **se crearán dos carpetas distintas** a nivel raíz: `/PROYECTO TW/` (que actuará como el Monolito Core) y `/microservicio-proyectos/` (Microservicio independiente). Ambas se comunicarán a Mongo Atlas, pero expondrán puertos distintos (`3000` y `4001`). Por favor, valida que esta estructura de carpetas es aceptable.
+>
+> Asimismo, me aseguraré de generar los archivos `Dockerfile` y `docker-compose.yml` listos para usarse. ¿Cuentas con entorno Docker Desktop funcional en tu máquina para ejecutar la prueba final?
+
+## Proposed Changes
+
+A continuación se detalla la reestructuración física y lógica requerida.
+
+---
+
+### 1. Extracción del Microservicio (Nuevo Repositorio/Carpeta)
+
+Se creará una nueva carpeta independiente a nivel de tu escritorio (ej. `C:\Users\Lenovo\Desktop\microservicio-proyectos`) que contendrá únicamente la lógica del dominio de Proyectos.
+
+#### [NEW] `microservicio-proyectos/src/index.js`
+Archivo de inicialización en Express que levantará el servidor exclusivamente en el puerto `4001`. Sólo registrará la ruta `/api/proyectos`.
+
+#### [NEW] `microservicio-proyectos/src/controllers/proyectoController.js`
+Se migrará exactamente la misma lógica de negocio, pero operando de forma aislada.
+
+#### [NEW] `microservicio-proyectos/src/routes/proyectos.js`
+Se migrarán las rutas asociadas (`POST`, `GET`, `PUT` de proyectos).
+
+#### [NEW] `microservicio-proyectos/package.json`
+Un archivo de definición de Node limpio que contendrá sólo las dependencias estrictamente necesarias (`express`, `mongoose`, `dotenv`, `cors`).
+
+---
+
+### 2. Limpieza del Monolito Base (PROYECTO TW)
+
+El proyecto actual se transformará en el "Core Administrativo" y perderá la responsabilidad de manejar los Proyectos.
+
+#### [MODIFY] [c:\Users\Lenovo\Desktop\PROYECTO TW\src\index.js](file:///Users/Lenovo/Desktop/PROYECTO%20TW/src/index.js)
+Se eliminará el montaje de la ruta `/api/proyectos`. 
+
+#### [DELETE] [c:\Users\Lenovo\Desktop\PROYECTO TW\src\controllers\proyectoController.js](file:///Users/Lenovo/Desktop/PROYECTO%20TW/src/controllers/proyectoController.js)
+Se eliminará el archivo del controlador ya que esta responsabilidad ahora recae sobre el microservicio.
+
+#### [DELETE] [c:\Users\Lenovo\Desktop\PROYECTO TW\src\routes\proyectos.js](file:///Users/Lenovo/Desktop/PROYECTO%20TW/src/routes/proyectos.js)
+Se eliminará el router asociado.
+
+*(Nota: Los modelos de Mongoose como Cliente.js, Etapa.js, y Proyecto.js formarán parte de ambas plataformas debido a las validaciones cruzadas necesarias en MongoDB).*
+
+---
+
+### 3. Contenedorización y Orquestación
+
+Se proveerá una infraestructura como código (IaC) para garantizar la portabilidad exigida por tu universidad.
+
+#### [NEW] `c:\Users\Lenovo\Desktop\PROYECTO TW\Dockerfile`
+Receta para compilar la imagen de la aplicación Node Core monolítica. Basada en una imagen `node:18-alpine` para extrema agilidad y bajo peso.
+
+#### [NEW] `c:\Users\Lenovo\Desktop\microservicio-proyectos\Dockerfile`
+Receta para compilar la imagen exclusiva de los Proyectos. Expuesta en el puerto `4001`.
+
+#### [NEW] `c:\Users\Lenovo\Desktop\PROYECTO TW\docker-compose.yml`
+Archivo maestro YAML para desplegar todo el entorno a la vez. Orquestará:
+1.  Servicio `api-monolito` (Mapeado a puerto 3000 de Windows).
+2.  Servicio `api-proyectos` (Mapeado a puerto 4001 de Windows).
+Ambos inyectarán limpiamente la variable de entorno `MONGODB_URI` desde el sistema hosthacia el clúster Atlas.
+
+## Verification Plan
+
+### Automated Tests
+1. Confirmaré que ambos proyectos levantan localmente corriendo scripts transaccionales en background simulando consultas:
+   - Request API 1 (`http://localhost:3000/api/clientes`) ✅.
+   - Request API 2 (`http://localhost:4001/api/proyectos`) ✅.
+
+### Manual Verification
+1. Te indicaré que abras una consola y ejecutes `docker-compose up --build -d`.
+2. Una vez que Docker levante ambas máquinas virtualizadas, te pediré que valides las interfaces desde tu FrontEnd o servidor local enviando datos reales a las APIs contenerizadas. Se generarán las evidencias "capturas" exigidas por el trabajo de grado.

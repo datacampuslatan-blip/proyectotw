@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Dashboard | IUDigital</title>
+    <!-- Fuente moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Utilidades Glassmorphism */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* Formulario */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(to right, var(--primary), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Lista de Clientes */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #clientesList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Tarjeta de Cliente Individual */
+        .cliente-item {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .cliente-item:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .cliente-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary);
+        }
+
+        .cliente-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .cliente-email {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .cliente-date {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 1rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--secondary);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+        }
+
+        /* Notificación */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            background: var(--secondary);
+            color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #ef4444;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Status DB */
+        .db-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--secondary);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Consola Visual MongoDB</h1>
+        <p>Monitor de Datos en Tiempo Real de la API RESTful</p>
+        <div class="db-status">
+            <div class="status-dot"></div>
+            Online - API Local Conectada a Atlas
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Panel Izquierdo: Formulario -->
+        <div class="glass-card">
+            <h2>➕ Insertar Datos</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; margin-top: 0.5rem;">
+                Agrega un nuevo cliente directamente a la base de datos de MongoDB.
+            </p>
+
+            <form id="clienteForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" placeholder="Ej. Carlos Restrepo" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" placeholder="carlos@iudigital.edu.co" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono de Contacto</label>
+                    <input type="text" id="telefono" placeholder="300 123 4567" required autocomplete="off">
+                </div>
+                <button type="submit">Enviar a Servidor (POST)</button>
+            </form>
+        </div>
+
+        <!-- Panel Derecho: Visualización de Datos -->
+        <div class="glass-card">
+            <div class="list-header">
+                <h2>📡 Registros en MongoDB</h2>
+                <button onclick="cargarClientes()" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem; background: transparent; border: 1px solid var(--primary);">
+                    🔄 Refrescar
+                </button>
+            </div>
+            
+            <div id="clientesList">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Cargando datos desde la API...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Guardado Exitosamente</div>
+
+    <script>
+        const API_URL = 'http://localhost:4000/api/clientes';
+
+        // Función para mostrar notificaciones flotantes
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Función para formatear fecha de MongoDB a algo legible
+        function formatearFecha(fechaString) {
+            const opciones = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(fechaString).toLocaleDateString('es-ES', opciones);
+        }
+
+        // PETICIÓN GET: Leer clientes de la API/MongoDB
+        async function cargarClientes() {
+            const listWrapper = document.getElementById('clientesList');
+            
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Error al conectar con el servidor');
+                
+                const data = await response.json();
+                
+                listWrapper.innerHTML = ''; // Limpiar div
+                
+                if (data.length === 0) {
+                    listWrapper.innerHTML = '<p style="color: var(--text-muted);">No hay clientes registrados en la base de datos.</p>';
+                    return;
+                }
+
+                // Generar HTML por cada registro de la BD
+                data.reverse().forEach(cliente => {
+                    const card = document.createElement('div');
+                    card.className = 'cliente-item';
+                    
+                    card.innerHTML = `
+                        <div class="badge">MongoDB Doc</div>
+                        <div class="cliente-name">${cliente.nombre}</div>
+                        <div class="cliente-email">✉️ ${cliente.email}</div>
+                        <div class="cliente-email">📱 ${cliente.telefono || 'Sin especificar'}</div>
+                        <div class="cliente-date">📅 Guardado: ${formatearFecha(cliente.createdAt)}</div>
+                    `;
+                    listWrapper.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error("No se pudo cargar", error);
+                listWrapper.innerHTML = `
+                    <div style="grid-column: 1 / -1; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+                        ❌ Error contactando servidor local. Verifica que "npm run dev" esté ejecutándose.
+                    </div>
+                `;
+            }
+        }
+
+        // PETICIÓN POST: Agregar nuevo registro a MongoDB
+        document.getElementById('clienteForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevenir carga de página
+            
+            const submitBtn = e.target.querySelector('button');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Enviando...';
+            submitBtn.disabled = true;
+
+            const nuevoCliente = {
+                nombre: document.getElementById('nombre').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoCliente)
+                });
+
+                if (!response.ok) {
+                    const errorMsg = await response.json();
+                    throw new Error(errorMsg.msg || 'Error al guardar');
+                }
+
+                showToast('✅ Registro guardado en Mongoose exitosamente');
+                document.getElementById('clienteForm').reset(); // Limpiar inputs
+                cargarClientes(); // Recargar grilla
+
+            } catch (error) {
+                showToast(`❌ ${error.message}`, true);
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Cargar los clientes en cuanto la página abre
+        cargarClientes();
+    </script>
+</body>
+</html>

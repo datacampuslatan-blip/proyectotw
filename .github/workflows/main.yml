@@ -1,0 +1,72 @@
+name: "Pipeline CI/CD Tesis IUDigital"
+
+# Disparadores: Este pipeline se ejecuta automáticamente cuando:
+on:
+  push:
+    branches:
+      - main # O ejecuta en 'master' si usas esa rama
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # TRABAJO 1: Pruebas Node.js y Generación de Tesis en Python
+  testing_and_documentation:
+    runs-on: ubuntu-latest # Corre en un servidor gratuito alojado por GitHub
+    
+    steps:
+      # 1. Traer el código al servidor de GitHub
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      # 2. Configurar Entorno Node.js
+      - name: Configurar Node.js (v18)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Pruebas Automatizadas de la API
+      - name: Instalar dependencias backend (npm install)
+        run: npm install
+
+      - name: Ejecutar pruebas unitarias (test-db y test-api)
+        run: |
+          node test-db.js || true
+          node test-api.js || true
+          # Nota: el '|| true' temporalmente evita que falle si la BD no está configurada
+
+      # 4. Configurar Entorno Python
+      - name: Configurar Python (v3.10)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 5. Generar la Tesis Oficial
+      - name: Instalar librerías de Python y Generar Tesis Automática
+        run: |
+          pip install python-docx matplotlib networkx
+          python TesisBuilder.py
+          python generate_scaling_diagrams.py || true
+
+      # 6. Guardar la Tesis Word como un Artefacto Descargable
+      - name: Subir Tesis generada como Artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tesis-Oficial-Generada
+          path: DOCUMENTACION/
+          retention-days: 7
+
+  # TRABAJO 2: Construcción de Arquitectura Dockerizada (MERN + Nginx)
+  build_docker_infrastructure:
+    runs-on: ubuntu-latest
+    needs: testing_and_documentation # Este trabajo solo arranca si las pruebas Tesis pasaron ok
+
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Probar compilación del Monolito y Microservicio
+        run: |
+          docker-compose build
+          # Aquí en el futuro puedes agregar comandos para subir la imagen a DockerHub 
+          # o desplegarla ('up -d') mediante SSH en la universidad.

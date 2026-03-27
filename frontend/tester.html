@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tester UI - Proyecto TW (CRUD)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Panel Izquierdo: Controles -->
+        <aside class="sidebar">
+            <div class="header">
+                <h2>Panel de Pruebas CRUD</h2>
+                <p>Verificación Visual del Monolito y Microservicio</p>
+            </div>
+
+            <div class="control-group">
+                <label for="entitySelect">🚀 Selecciona el Módulo a Probar:</label>
+                <select id="entitySelect" onchange="cambioEntidad()">
+                    <optgroup label="Monolito (Puerto 4000)">
+                        <option value="tipos-proyecto">Tipo de Proyecto</option>
+                        <option value="clientes">Cliente</option>
+                        <option value="universidades">Universidad</option>
+                        <option value="etapas">Etapa</option>
+                    </optgroup>
+                    <optgroup label="Microservicio Desacoplado (Puerto 4001)">
+                        <option value="proyectos">Proyecto (Mayor Demanda)</option>
+                    </optgroup>
+                </select>
+                <small id="portIndicator" class="indicator">Puerto activo: 4000</small>
+            </div>
+
+            <!-- Formulario Base (Para todo excepto proyectos que es más complejo) -->
+            <form id="crudForm" class="crud-form">
+                <input type="hidden" id="entityId">
+                <div class="form-group">
+                    <label for="nombreInput">Nombre:</label>
+                    <input type="text" id="nombreInput" placeholder="Ej: Fase Inicial" required>
+                </div>
+
+                <!-- Campos extra específicos se inyectan aquí con JS -->
+                <div id="extraFields" style="display:none;"></div>
+
+                <button type="submit" class="btn primary-btn">Guardar Registro</button>
+            </form>
+
+            <div class="action-buttons">
+                <button type="button" class="btn load-btn" onclick="fetchData()">Cargar Todos (GET)</button>
+                <button type="button" class="btn reset-btn" onclick="limpiarFormulario()">Limpiar Formulario</button>
+            </div>
+
+            <!-- Panel de Notificaciones de Éxito o Error -->
+            <div id="statusMessage" class="status-message"></div>
+        </aside>
+
+        <!-- Panel Derecho: Resultados -->
+        <main class="content">
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <!-- Las cabeceras se inyectan dinámicamente -->
+                        <tr id="tableHeaders">
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Las filas se inyectan dinámicamente -->
+                    </tbody>
+                </table>
+                <div id="loader" class="loader" style="display: none;">Cargando datos...</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
